@@ -375,7 +375,12 @@ class TempoMap:
             # Fire on-beat callbacks
             for cb in self._callbacks:
                 if cb.on_beat is not None:
-                    if self._beat - cb._last_fired_beat >= cb.period or cb._last_fired_beat < 0:
+                    if cb._last_fired_beat < 0:
+                        # First fire: wait for a beat aligned to the period
+                        if self._beat % cb.period == 0:
+                            cb.on_beat(self._beat, beat_time)
+                            cb._last_fired_beat = self._beat
+                    elif self._beat - cb._last_fired_beat >= cb.period:
                         cb.on_beat(self._beat, beat_time)
                         cb._last_fired_beat = self._beat
 
